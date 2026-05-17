@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class UserCreateDTO(BaseModel):
@@ -10,7 +10,7 @@ class UserCreateDTO(BaseModel):
     On valide ici le format (ex: EmailStr garantit que c'est un email valide).
     """
     email: EmailStr
-    password: str
+    password: str = Field(..., max_length=72, description="Le mot de passe (limite bcrypt 72 caractères)")
 
 
 class UserResponseDTO(BaseModel):

@@ -6,7 +6,7 @@ from app.domain.repositories.user_repository import UserRepository
 
 # Configuration de base pour le hashing.
 # Normalement, ceci serait injecté via un service d'infrastructure (ex: IPasswordHasher).
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
 class UserUseCases:

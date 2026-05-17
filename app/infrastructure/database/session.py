@@ -1,14 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
 
-# Dans un vrai projet, l'URL viendrait des variables d'environnement (pydantic-settings)
-# Pour l'instant on hardcode une URL PostgreSQL asynchrone (asyncpg)
-DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/fastapi_crud"
+from app.infrastructure.config.settings import settings
 
-engine = create_async_engine(DATABASE_URL, echo=True)
+# On utilise l'URL dynamique générée depuis notre .env !
+engine = create_async_engine(settings.database_url, echo=(settings.app_env == "development"))
 async_session_maker = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 Base = declarative_base()
+
 
 async def get_db_session():
     """
