@@ -21,3 +21,7 @@ class UserRepository(Protocol):
     async def get_by_email(self, email: str) -> Optional[User]:
         """Récupère un utilisateur par son email."""
         ...
+
+    async def update(self, user: User) -> User:
+        """Met à jour un utilisateur existant."""
+        ...

@@ -1,6 +1,7 @@
+from datetime import datetime, timezone
 from passlib.context import CryptContext
 
-from app.application.dto.user_dto import UserCreateDTO, UserResponseDTO
+from app.application.dto.user_dto import UserCreateDTO, UserResponseDTO, UserUpdateDTO
 from app.domain.entities.user import User
 from app.domain.repositories.user_repository import UserRepository
 
@@ -43,3 +44,20 @@ class UserUseCases:
 
         # 5. Retour : On transforme notre Entité métier en DTO pour l'API
         return UserResponseDTO.model_validate(saved_user)
+
+    async def update_user(self, user: User, dto: UserUpdateDTO) -> UserResponseDTO:
+        """Cas d'usage : Mettre à jour son propre profil."""
+        if dto.password:
+            user.hashed_password = pwd_context.hash(dto.password)
+            user.updated_at = datetime.now(timezone.utc)
+        
+        updated_user = await self.user_repository.update(user)
+        return UserResponseDTO.model_validate(updated_user)
+
+    async def deactivate_user(self, user: User) -> UserResponseDTO:
+        """Cas d'usage : Désactiver son compte (Soft Delete)."""
+        user.is_active = False
+        user.updated_at = datetime.now(timezone.utc)
+        
+        updated_user = await self.user_repository.update(user)
+        return UserResponseDTO.model_validate(updated_user)

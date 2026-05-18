@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.application.dto.user_dto import UserCreateDTO, UserResponseDTO
+from app.application.dto.user_dto import UserCreateDTO, UserResponseDTO, UserUpdateDTO
 from app.application.use_cases.user_use_cases import UserUseCases
 from app.domain.entities.user import User
 from app.infrastructure.database.session import get_db_session
@@ -48,3 +48,26 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
     # L'entité métier `current_user` est magiquement transformée 
     # en `UserResponseDTO` par Pydantic.
     return current_user
+
+@router.patch("/me", response_model=UserResponseDTO)
+async def update_users_me(
+    user_update: UserUpdateDTO,
+    current_user: User = Depends(get_current_user),
+    use_cases: UserUseCases = Depends(get_user_use_cases)
+):
+    """
+    Route Sécurisée : Met à jour le profil de l'utilisateur connecté.
+    Pour l'instant, permet uniquement de changer le mot de passe.
+    """
+    return await use_cases.update_user(current_user, user_update)
+
+@router.delete("/me", response_model=UserResponseDTO)
+async def delete_users_me(
+    current_user: User = Depends(get_current_user),
+    use_cases: UserUseCases = Depends(get_user_use_cases)
+):
+    """
+    Route Sécurisée : Désactive le compte de l'utilisateur connecté (Soft Delete).
+    L'utilisateur ne sera pas supprimé de la base de données, mais son `is_active` passera à false.
+    """
+    return await use_cases.deactivate_user(current_user)

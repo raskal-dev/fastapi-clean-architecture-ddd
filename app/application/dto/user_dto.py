@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 
+from typing import Optional
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
@@ -26,3 +27,11 @@ class UserResponseDTO(BaseModel):
 
     # Permet à Pydantic de lire les données depuis notre Entité ou Modèle SQLAlchemy
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserUpdateDTO(BaseModel):
+    """
+    DTO pour la mise à jour (PATCH).
+    Tous les champs sont optionnels, on ne met à jour que ce qui est fourni.
+    """
+    password: Optional[str] = Field(None, max_length=72, description="Nouveau mot de passe")
