@@ -2,10 +2,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.infrastructure.config.settings import settings
 from app.infrastructure.database.session import Base, engine
 # Assurons-nous d'importer les modèles pour que metadata.create_all les voie
 from app.infrastructure.database.models import user_model
-from app.presentation.api.routes import users
+from app.presentation.api.routes import auth, users
 
 
 @asynccontextmanager
@@ -28,8 +29,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# On connecte le routeur de nos utilisateurs à l'application principale
-app.include_router(users.router)
+# On connecte nos routeurs avec le préfixe défini dans les settings (ex: /api/v1)
+app.include_router(auth.router, prefix=settings.api_v1_prefix)
+app.include_router(users.router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/")

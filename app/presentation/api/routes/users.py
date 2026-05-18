@@ -3,8 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.dto.user_dto import UserCreateDTO, UserResponseDTO
 from app.application.use_cases.user_use_cases import UserUseCases
+from app.domain.entities.user import User
 from app.infrastructure.database.session import get_db_session
 from app.infrastructure.repositories.postgres_user_repository import PostgresUserRepository
+from app.presentation.api.dependencies.auth_deps import get_current_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -35,3 +37,14 @@ async def create_user(
     except ValueError as e:
         # Si une règle métier n'est pas respectée (ex: email existant)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+@router.get("/me", response_model=UserResponseDTO)
+async def read_users_me(current_user: User = Depends(get_current_user)):
+    """
+    Route Sécurisée : Récupère les informations de l'utilisateur connecté.
+    Le simple fait d'ajouter `Depends(get_current_user)` garantit que 
+    FastAPI rejettera la requête (401) s'il n'y a pas de token valide !
+    """
+    # L'entité métier `current_user` est magiquement transformée 
+    # en `UserResponseDTO` par Pydantic.
+    return current_user
