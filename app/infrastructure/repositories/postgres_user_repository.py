@@ -60,3 +60,16 @@ class PostgresUserRepository(UserRepository):
         if db_user:
             return self._to_entity(db_user)
         return None
+
+    async def update(self, user: User) -> User:
+        db_user = await self.session.get(UserModel, user.id)
+        if not db_user:
+            raise ValueError("Utilisateur introuvable")
+        
+        db_user.hashed_password = user.hashed_password
+        db_user.is_active = user.is_active
+        db_user.updated_at = user.updated_at
+        
+        await self.session.commit()
+        await self.session.refresh(db_user)
+        return self._to_entity(db_user)
