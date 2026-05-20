@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: fastapi_crud_db
+    restart: always
+    environment:
+      # Ces variables initialisent la base de données PostgreSQL
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-fastapi_crud}
+    ports:
+      - "5432:5432"
+    volumes:
+      # On crée un volume persistant pour ne pas perdre les données si le conteneur redémarre
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: fastapi_crud_api
+    restart: always
+    environment:
+      # Variables d'environnement pour l'API.
+      # Remarque : POSTGRES_HOST pointe vers le nom du service 'db' (magie du réseau Docker)
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-fastapi_crud}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-secret_de_dev_a_changer_en_production}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  # Déclaration du volume géré par Docker
+  postgres_data:
