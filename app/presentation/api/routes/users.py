@@ -6,7 +6,7 @@ from app.application.use_cases.user_use_cases import UserUseCases
 from app.domain.entities.user import User
 from app.infrastructure.database.session import get_db_session
 from app.infrastructure.repositories.postgres_user_repository import PostgresUserRepository
-from app.presentation.api.dependencies.auth_deps import get_current_user
+from app.presentation.api.dependencies.auth_deps import get_current_user, require_role
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -37,6 +37,17 @@ async def create_user(
     except ValueError as e:
         # Si une règle métier n'est pas respectée (ex: email existant)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+@router.get("/", response_model=list[UserResponseDTO])
+async def read_all_users(
+    current_user: User = Depends(require_role(["ADMIN"])),
+    use_cases: UserUseCases = Depends(get_user_use_cases)
+):
+    """
+    Route Sécurisée (RBAC) : Récupère tous les utilisateurs.
+    Seul un utilisateur avec le rôle ADMIN peut y accéder.
+    """
+    return await use_cases.get_all_users()
 
 @router.get("/me", response_model=UserResponseDTO)
 async def read_users_me(current_user: User = Depends(get_current_user)):

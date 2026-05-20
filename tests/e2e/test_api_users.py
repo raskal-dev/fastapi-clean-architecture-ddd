@@ -50,3 +50,31 @@ def test_full_login_flow(client: TestClient):
     
     assert me_response.status_code == 200
     assert me_response.json()["email"] == "flow@test.com"
+
+def test_rbac_admin_only(client: TestClient, mock_user_repo):
+    """
+    Test E2E : Vérifie le RBAC sur la route GET /users/
+    """
+    # 1. Inscription d'un utilisateur normal
+    client.post("/api/v1/users/", json={"email": "user@test.com", "password": "pwd"})
+    token_user = client.post("/api/v1/auth/token", data={"username": "user@test.com", "password": "pwd"}).json()["access_token"]
+    
+    # 2. Tentative d'accès à la route admin par l'utilisateur normal
+    headers_user = {"Authorization": f"Bearer {token_user}"}
+    response_forbidden = client.get("/api/v1/users/", headers=headers_user)
+    assert response_forbidden.status_code == 403 # L'accès doit être refusé
+    
+    # 3. Élévation de privilèges (en manipulant le Mock DB pour le test)
+    user_entity = list(mock_user_repo.users.values())[0]
+    from app.domain.entities.user import UserRole
+    user_entity.role = UserRole.ADMIN
+    
+    # 4. On redemande un token (le payload contiendra le nouveau rôle)
+    token_admin = client.post("/api/v1/auth/token", data={"username": "user@test.com", "password": "pwd"}).json()["access_token"]
+    
+    # 5. Tentative d'accès en tant qu'ADMIN
+    headers_admin = {"Authorization": f"Bearer {token_admin}"}
+    response_success = client.get("/api/v1/users/", headers=headers_admin)
+    
+    assert response_success.status_code == 200
+    assert isinstance(response_success.json(), list)

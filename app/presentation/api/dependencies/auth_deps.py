@@ -1,5 +1,7 @@
 import uuid
 
+from typing import Callable, Sequence
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -50,3 +52,18 @@ async def get_current_user(
         raise credentials_exception
         
     return user
+
+def require_role(allowed_roles: Sequence[str]) -> Callable:
+    """
+    Crée une dépendance FastAPI qui vérifie le rôle de l'utilisateur.
+    Utilisation: `Depends(require_role(["ADMIN"]))`
+    """
+    async def role_checker(current_user: User = Depends(get_current_user)) -> User:
+        # On vérifie si la valeur string du rôle de l'utilisateur est dans la liste
+        if current_user.role.value not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Vous n'avez pas les permissions nécessaires."
+            )
+        return current_user
+    return role_checker

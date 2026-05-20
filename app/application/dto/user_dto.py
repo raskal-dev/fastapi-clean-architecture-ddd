@@ -4,6 +4,8 @@ from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
+from app.domain.entities.user import UserRole
+
 
 class UserCreateDTO(BaseModel):
     """
@@ -21,6 +23,7 @@ class UserResponseDTO(BaseModel):
     """
     id: uuid.UUID
     email: EmailStr
+    role: UserRole
     is_active: bool
     created_at: datetime
     updated_at: datetime

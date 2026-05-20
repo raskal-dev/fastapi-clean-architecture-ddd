@@ -39,6 +39,9 @@ class MockUserRepository(UserRepository):
                 return user
         return None
 
+    async def get_all(self) -> list[User]:
+        return list(self.users.values())
+
     async def update(self, user: User) -> User:
         self.users[user.id] = user
         return user

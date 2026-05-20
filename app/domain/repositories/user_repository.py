@@ -25,3 +25,7 @@ class UserRepository(Protocol):
     async def update(self, user: User) -> User:
         """Met à jour un utilisateur existant."""
         ...
+
+    async def get_all(self) -> list[User]:
+        """Récupère tous les utilisateurs (pour l'admin)."""
+        ...

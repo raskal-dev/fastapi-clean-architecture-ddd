@@ -27,6 +27,6 @@ class AuthUseCases:
 
         # 3. Générer le JWT
         # On utilise "sub" (subject) pour stocker l'ID de l'utilisateur, c'est le standard JWT
-        access_token = create_access_token(data={"sub": str(user.id)})
+        access_token = create_access_token(data={"sub": str(user.id), "role": user.role.value})
         
         return TokenDTO(access_token=access_token)

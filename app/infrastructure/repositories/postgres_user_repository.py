@@ -24,6 +24,7 @@ class PostgresUserRepository(UserRepository):
             id=model.id,
             email=model.email,
             hashed_password=model.hashed_password,
+            role=model.role,
             is_active=model.is_active,
             created_at=model.created_at,
             updated_at=model.updated_at
@@ -35,6 +36,7 @@ class PostgresUserRepository(UserRepository):
             id=entity.id,
             email=entity.email,
             hashed_password=entity.hashed_password,
+            role=entity.role,
             is_active=entity.is_active,
             created_at=entity.created_at,
             updated_at=entity.updated_at
@@ -67,9 +69,15 @@ class PostgresUserRepository(UserRepository):
             raise ValueError("Utilisateur introuvable")
         
         db_user.hashed_password = user.hashed_password
+        db_user.role = user.role
         db_user.is_active = user.is_active
         db_user.updated_at = user.updated_at
         
         await self.session.commit()
         await self.session.refresh(db_user)
         return self._to_entity(db_user)
+
+    async def get_all(self) -> list[User]:
+        result = await self.session.execute(select(UserModel))
+        models = result.scalars().all()
+        return [self._to_entity(m) for m in models]

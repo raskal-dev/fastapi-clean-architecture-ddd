@@ -43,3 +43,21 @@ async def test_register_user_duplicate_email(mock_user_repo):
         await use_cases.register_user(dto) # Deuxième tentative
         
     assert str(exc.value) == "Un utilisateur avec cet email existe déjà."
+
+@pytest.mark.asyncio
+async def test_get_all_users(mock_user_repo):
+    """
+    Test unitaire : Récupération de tous les utilisateurs.
+    """
+    use_cases = UserUseCases(user_repository=mock_user_repo)
+    
+    # 1. On crée deux utilisateurs
+    await use_cases.register_user(UserCreateDTO(email="user1@test.com", password="pwd"))
+    await use_cases.register_user(UserCreateDTO(email="user2@test.com", password="pwd"))
+    
+    # 2. On récupère tout
+    users = await use_cases.get_all_users()
+    
+    # 3. Vérification
+    assert len(users) == 2
+    assert users[0].email == "user1@test.com"

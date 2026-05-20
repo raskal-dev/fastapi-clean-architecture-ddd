@@ -61,3 +61,8 @@ class UserUseCases:
         
         updated_user = await self.user_repository.update(user)
         return UserResponseDTO.model_validate(updated_user)
+
+    async def get_all_users(self) -> list[UserResponseDTO]:
+        """Cas d'usage : Récupérer tous les utilisateurs (Admin uniquement)."""
+        users = await self.user_repository.get_all()
+        return [UserResponseDTO.model_validate(u) for u in users]
